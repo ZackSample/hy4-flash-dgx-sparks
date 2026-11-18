@@ -1,0 +1,89 @@
+What's the weather like in Tokyo right now? Please give it in Fahrenheit.
+
+---
+You can call the following tools (OpenAI function-calling format):
+
+[
+  {
+    "type": "function",
+    "function": {
+      "name": "get_weather",
+      "description": "Get the current weather for a city.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "city": {
+            "type": "string",
+            "description": "City name, e.g. Paris"
+          },
+          "unit": {
+            "type": "string",
+            "enum": [
+              "celsius",
+              "fahrenheit"
+            ]
+          }
+        },
+        "required": [
+          "city",
+          "unit"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "calculator",
+      "description": "Evaluate an arithmetic expression using + - * / and parentheses.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "expression": {
+            "type": "string",
+            "description": "e.g. (2+3)*4"
+          }
+        },
+        "required": [
+          "expression"
+        ]
+      }
+    }
+  },
+  {
+    "type": "function",
+    "function": {
+      "name": "search_flights",
+      "description": "Search for flights.",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "origin": {
+            "type": "string",
+            "description": "Origin city or IATA code"
+          },
+          "destination": {
+            "type": "string",
+            "description": "Destination city or IATA code"
+          },
+          "date": {
+            "type": "string",
+            "description": "Departure date, YYYY-MM-DD"
+          },
+          "passengers": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "origin",
+          "destination",
+          "date",
+          "passengers"
+        ]
+      }
+    }
+  }
+]
+
+Respond with exactly one JSON object and nothing else, in this form:
+{"tool": <name of the tool to call, or null if no tool is needed>, "arguments": {<arguments for the tool, or empty>}, "answer": <your direct text answer if no tool is called, otherwise null>}

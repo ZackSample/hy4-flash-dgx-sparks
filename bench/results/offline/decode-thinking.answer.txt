@@ -1,0 +1,9 @@
+Case C is a knight: then exactly two people are knights, and A's statement means B is not a knight. If A were a knight, B would be a knave, so E would be a knight (from B's lie), giving three knights (A, C, E), a contradiction. So A is a knave, which makes B a knight (since C is a knight, "exactly one of B and C" is false only if B is also a knight). B's truth then makes E a knave, and D's "A and E are the same type" is then true, forcing D to be a knight. That gives three knights, a contradiction. So C is a knave.
+
+With C a knave, A's statement is false, so B is not a knight: B is a knave. B's statement is then false, so E is a knight. E's statement "if D is a knight then C is a knight" is true, and since C is a knave, D must not be a knight: D is a knave. D's statement "A and E are the same type" is false (A is a knave, E is a knight), which is consistent with D being a knave.
+
+Check: A (knave) says exactly one of B, C is a knight; neither is, so false. B (knave) says E is a knave; E is a knight, so false. C (knave) says exactly two of us are knights; only E is, so false. D (knave) says A and E are the same type; they differ, so false. E (knight) says if D is a knight then C is a knight; D is a knave, so true. All statements are consistent with their speakers.
+
+Only E is a knight.
+
+ANSWER: E

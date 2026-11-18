@@ -1,0 +1,11 @@
+Four people (Ana, Ben, Cleo, Dev) live in four houses in a row, numbered 1 to 4 from left to right, one person per house. Each owns a different pet: a cat, a dog, a parrot, a fish.
+1. The fish owner lives in house 4.
+2. Ben lives immediately to the right of the cat owner (his house number is exactly one higher).
+3. Cleo owns neither the dog nor the fish.
+4. Dev lives in an even-numbered house.
+5. Ana lives next door to the dog owner.
+6. Cleo does not live in house 1.
+7. Ana does not own the cat.
+Who lives in each house? Give the four names in house order 1, 2, 3, 4, separated by commas.
+
+Think it through, then give the final answer on the last line in the form `ANSWER: <answer>`.

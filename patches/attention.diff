@@ -1,0 +1,43 @@
+--- a/attention.py
++++ b/attention.py
+@@ -70,7 +70,7 @@
+         self.learnable_sink = config.learnable_sink
+         self.use_hpc_gated_mla = False
+         capability = current_platform.get_device_capability()
+-        if capability is None or capability.major not in (9, 10):
++        if capability is None or capability.major not in (9, 10, 12):
+             raise NotImplementedError(
+                 "Flash MLA requires Hopper or Blackwell data-center GPUs"
+             )
+@@ -175,10 +175,12 @@
+             use_sparse=True,
+             indexer=self.indexer,
+             topk_indices_buffer=topk_indices_buffer,
+-            attn_backend=FlashSWABackend
+-            if self.is_window_layer
+-            else FlashSparseBackend,
+-            sliding_window=config.sliding_window if self.is_window_layer else None,
++            attn_backend=self._backend_for(capability),
++            # hy4-flash-sparks patch: on sm_12x the window is only an index list; the KV rows stay packed
++            # fp8_ds_mla and whole (no page eviction), which the engine's sliding-window mode cannot do.
++            sliding_window=config.sliding_window
++            if self.is_window_layer and capability.major != 12
++            else None,
+             sinks=self.learnable_sink_param,
+         )
+         self.post_proj_norm = (
+@@ -188,6 +190,14 @@
+             else None
+         )
+ 
++    def _backend_for(self, capability):
++        # hy4-flash-sparks patch: GB10 (sm_12x) has no FlashMLA; use FlashInfer's SM120 kernel there.
++        if capability.major == 12:
++            from .sm120 import FlashSparseSM120Backend, FlashSWASM120Backend
++
++            return FlashSWASM120Backend if self.is_window_layer else FlashSparseSM120Backend
++        return FlashSWABackend if self.is_window_layer else FlashSparseBackend
++
+     def forward(self, positions, hidden_states, llama_4_scaling=None):
+         q_c = self.q_a_layernorm(self.q_a_proj(hidden_states)[0])
+         q = self.q_b_proj(q_c)[0].reshape(-1, self.num_local_heads, self.qk_head_dim)

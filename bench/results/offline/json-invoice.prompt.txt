@@ -1,0 +1,9 @@
+Extract the information from the text below into a JSON object with exactly these keys:
+{"invoice_number": string, "issue_date": string "YYYY-MM-DD", "currency": string (ISO 4217 code), "total": number, "items": array of {"sku": string, "qty": integer} in the order they appear (product lines only, not shipping)}
+
+Text:
+"""
+INVOICE (scan, sorry for the coffee stain). Ref no. INV-2027-0042, which supersedes the draft INV-2027-0041. Issued 3 Feb 2027, payable within 30 days. Line items: 3 x SKU-A17 widget brackets @ 12.50; 1 x SKU-B02 mounting rail @ 49.99; 10 x SKU-C33 hex bolts @ 0.40. Shipping 5.00 flat. All prices are in euros. Total due: 96.49. Questions? Call accounts on extension 204.
+"""
+
+Reply with only the JSON object and nothing else.

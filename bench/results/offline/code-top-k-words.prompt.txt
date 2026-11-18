@@ -1,0 +1,4 @@
+Write a Python function `top_k_words(text: str, k: int) -> list[str]`.
+A word is a maximal run of ASCII letters a-z or A-Z; every other character (digits, apostrophes, hyphens, punctuation, whitespace) separates words. Words are compared case-insensitively and returned in lowercase. Return the k most frequent words, ordered by frequency descending; words with equal frequency are ordered alphabetically ascending. If there are fewer than k distinct words return all of them. If k <= 0 return [].
+
+Give the complete implementation (with any imports it needs) in a single ```python code block at the end of your answer. Do not include example usage or tests in that block.

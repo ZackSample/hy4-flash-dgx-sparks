@@ -1,0 +1,25 @@
+Standard dynamic programming: dp[i][j] is the LCS length of a[i:] and b[j:]. The table is built from the end, then a forward walk reconstructs one subsequence. For 500-character strings this is about 250,000 cells, which is fast.
+
+```python
+def lcs(a: str, b: str) -> str:
+    n, m = len(a), len(b)
+    dp = [[0] * (m + 1) for _ in range(n + 1)]
+    for i in range(n - 1, -1, -1):
+        for j in range(m - 1, -1, -1):
+            if a[i] == b[j]:
+                dp[i][j] = dp[i + 1][j + 1] + 1
+            else:
+                dp[i][j] = max(dp[i + 1][j], dp[i][j + 1])
+    out = []
+    i = j = 0
+    while i < n and j < m:
+        if a[i] == b[j]:
+            out.append(a[i])
+            i += 1
+            j += 1
+        elif dp[i + 1][j] >= dp[i][j + 1]:
+            i += 1
+        else:
+            j += 1
+    return "".join(out)
+```

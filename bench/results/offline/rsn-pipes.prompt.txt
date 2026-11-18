@@ -1,0 +1,3 @@
+Pipe A fills a tank in 6 hours and pipe B fills it in 9 hours. Drain C empties a full tank in 12 hours. The tank starts empty and all three are opened at the same time. How many hours does it take to fill the tank? Give the answer as a reduced fraction.
+
+Think it through, then give the final answer on the last line in the form `ANSWER: <answer>`.

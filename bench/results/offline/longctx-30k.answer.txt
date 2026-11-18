@@ -1,0 +1,5 @@
+The three notes in the log give the fragments: ALPHA is 979 (after record 00105), BETA is 350 (after record 00441), and GAMMA is 292 (after record 00750).
+
+979 + 350 + 292 = 1621.
+
+ANSWER: 1621

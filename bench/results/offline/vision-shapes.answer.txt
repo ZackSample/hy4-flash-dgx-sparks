@@ -1,0 +1,3 @@
+The image has three red squares (top left, top right and lower middle) and two blue circles (one on the left and one at the lower right).
+
+ANSWER: 3, 2

@@ -1,0 +1,1 @@
+The image is split into four coloured quadrants. What colour is the top-right quadrant? On the last line write `ANSWER: <colour>`.

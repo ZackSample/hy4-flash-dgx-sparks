@@ -1,0 +1,1 @@
+{"tool": "get_weather", "arguments": {"city": "Tokyo", "unit": "fahrenheit"}, "answer": null}

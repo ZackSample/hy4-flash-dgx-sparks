@@ -1,0 +1,3 @@
+A bakery sells muffins at $3.00 each and cookies at $1.25 each. On Monday it sold 47 muffins and 132 cookies. On Tuesday it sold 38 muffins and 95 cookies. What was the bakery's total revenue in dollars over the two days?
+
+Think it through, then give the final answer on the last line in the form `ANSWER: <answer>`.

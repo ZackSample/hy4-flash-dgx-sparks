@@ -1,0 +1,3 @@
+What is the sum of all integers from 1 to 500 inclusive that are divisible by 3 or by 7 (or both)?
+
+Think it through, then give the final answer on the last line in the form `ANSWER: <answer>`.

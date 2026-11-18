@@ -1,0 +1,25 @@
+The string is first checked against a regular expression for canonical Roman numerals (each place has its own pattern, so IIII, IC, VX and MMMM all fail, and the empty string is rejected). Then the value is summed right to left, subtracting a symbol when it is smaller than the one after it.
+
+```python
+import re
+
+_CANONICAL_ROMAN = re.compile(
+    r"M{0,3}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})"
+)
+_VALUES = {"I": 1, "V": 5, "X": 10, "L": 50, "C": 100, "D": 500, "M": 1000}
+
+
+def roman_to_int(s: str) -> int:
+    if not isinstance(s, str) or not s or _CANONICAL_ROMAN.fullmatch(s) is None:
+        raise ValueError(f"not a valid canonical Roman numeral: {s!r}")
+    total = 0
+    prev = 0
+    for ch in reversed(s):
+        value = _VALUES[ch]
+        if value < prev:
+            total -= value
+        else:
+            total += value
+            prev = value
+    return total
+```

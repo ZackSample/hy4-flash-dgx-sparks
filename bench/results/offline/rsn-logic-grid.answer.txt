@@ -1,0 +1,11 @@
+Fish is in house 4 (clue 1). Cleo is not in house 1 (clue 6) and not in house 4 (house 4 has the fish, and Cleo does not own the fish), so Cleo is in house 2 or 3.
+
+If Cleo is in house 2, Dev must be in house 4 (the only even house left), and Ana and Ben take houses 1 and 3. Ben must be one house right of the cat owner, so Ben is in house 3 and the cat owner is Cleo in house 2. Ana in house 1 then has only house 2 as a neighbour, and Cleo has the cat, not the dog. That breaks clue 5, so Cleo is not in house 2.
+
+So Cleo is in house 3. If Dev were in house 4, Ana and Ben would take houses 1 and 2. Ben cannot be in house 1, and Ben in house 2 needs the cat in house 1, which is Ana, breaking clue 7. So Dev is in house 2 (even).
+
+Ana and Ben take houses 1 and 4. Ben must be one right of the cat owner, so Ben is in house 4 and Cleo (house 3) owns the cat. Ana is in house 1, next to house 2 (Dev), so Dev owns the dog. Ana owns the parrot and Ben owns the fish.
+
+Check: fish in 4 (Ben), Ben right of cat (4 is right of 3), Cleo has cat, Dev in even house 2, Ana next to dog (Dev), Cleo not in 1, Ana not cat. All clues hold.
+
+ANSWER: Ana, Dev, Cleo, Ben

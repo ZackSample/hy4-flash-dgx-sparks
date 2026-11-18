@@ -1,0 +1,4 @@
+How many times does the letter 'r' (upper or lower case) appear in this sentence?
+The rural juror reported three rare errors during the trial.
+
+Think it through, then give the final answer on the last line in the form `ANSWER: <answer>`.

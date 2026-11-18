@@ -1,0 +1,1 @@
+{"tool": "calculator", "arguments": {"expression": "1234 * 5678 + 91"}, "answer": null}

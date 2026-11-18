@@ -1,0 +1,15 @@
+Words are the maximal ASCII letter runs, found with a regular expression. Counts are taken on the lowercased words, then sorted by descending count and ascending word. Slicing to k gives the answer, and fewer than k distinct words naturally returns all of them.
+
+```python
+import re
+from collections import Counter
+
+
+def top_k_words(text: str, k: int) -> list[str]:
+    if k <= 0:
+        return []
+    words = re.findall(r"[A-Za-z]+", text)
+    counts = Counter(word.lower() for word in words)
+    ordered = sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))
+    return [word for word, _ in ordered[:k]]
+```

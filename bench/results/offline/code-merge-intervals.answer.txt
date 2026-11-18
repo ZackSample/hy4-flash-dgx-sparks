@@ -1,0 +1,16 @@
+Sort copies of the intervals by start (then end), so the input is never modified. Then sweep once, extending the last merged interval whenever the next start is less than or equal to its end (touching intervals merge).
+
+```python
+def merge_intervals(intervals: list[list[int]]) -> list[list[int]]:
+    if not intervals:
+        return []
+    ordered = sorted((list(iv) for iv in intervals), key=lambda iv: (iv[0], iv[1]))
+    merged: list[list[int]] = []
+    for start, end in ordered:
+        if merged and start <= merged[-1][1]:
+            if end > merged[-1][1]:
+                merged[-1][1] = end
+        else:
+            merged.append([start, end])
+    return merged
+```

@@ -1,0 +1,4 @@
+Write a Python function `merge_intervals(intervals: list[list[int]]) -> list[list[int]]`.
+Each interval is [start, end] with start <= end (closed). Merge all overlapping intervals; intervals that only touch (e.g. [1, 4] and [4, 5]) also merge. Return a new list of [start, end] lists sorted by start. The input may be unsorted and may be empty. Do not modify the input list.
+
+Give the complete implementation (with any imports it needs) in a single ```python code block at the end of your answer. Do not include example usage or tests in that block.

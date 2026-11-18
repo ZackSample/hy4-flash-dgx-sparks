@@ -1,0 +1,5 @@
+Muffins sold: 47 + 38 = 85, at $3.00 each, giving 85 x 3.00 = $255.00.
+Cookies sold: 132 + 95 = 227, at $1.25 each, giving 227 x 1.25 = $283.75.
+Total revenue: 255.00 + 283.75 = $538.75.
+
+ANSWER: $538.75

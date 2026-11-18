@@ -1,0 +1,7 @@
+Five people, A, B, C, D and E, are each either a knight (always tells the truth) or a knave (always lies).
+A says: "Exactly one of B and C is a knight."
+B says: "E is a knave."
+C says: "Exactly two of us five are knights."
+D says: "A and E are the same type."
+E says: "If D is a knight, then C is a knight."
+Determine who is a knight and who is a knave. Check every statement. On the last line write `ANSWER: ` followed by the letters of the knights, comma separated.

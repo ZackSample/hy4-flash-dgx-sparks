@@ -1,0 +1,1 @@
+Reply with exactly 5 lines. Each line must start with a different vowel (A, E, I, O, U; one line each, any order). Do not write any other text: no title, no numbering, no blank lines.

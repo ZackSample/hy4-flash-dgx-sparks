@@ -1,0 +1,1 @@
+Look at the image. How many red squares are there, and how many blue circles? On the last line write `ANSWER: <number of red squares>, <number of blue circles>`.

@@ -1,0 +1,215 @@
+{
+ "meta": {
+  "label": "hy4-nothink",
+  "model": "hy4-flash",
+  "base": "http://localhost:8888/v1",
+  "started": "2026-11-18T04:47:43",
+  "think_off": {
+   "chat_template_kwargs": {
+    "reasoning_effort": "no_think"
+   }
+  },
+  "think_on": {
+   "chat_template_kwargs": {
+    "reasoning_effort": "no_think"
+   }
+  },
+  "max_ctx": 120000,
+  "timeout": 900.0,
+  "only": "ability",
+  "filter": "code-evaluate|code-rate-limiter|rsn-pipes",
+  "tps_definition": "(completion_tokens - 1) / (time of last delta - time of first delta)",
+  "server_models": {
+   "object": "list",
+   "data": [
+    {
+     "id": "hy4-flash",
+     "object": "model",
+     "created": 1794998863,
+     "owned_by": "vllm",
+     "root": "/models/Hy4-flash-FP8/snapshots/003107fa248f5892064ab1c43af0a7003dd68c9b",
+     "parent": null,
+     "max_model_len": 131072,
+     "permission": [
+      {
+       "id": "modelperm-9578ac99a0b473b7",
+       "object": "model_permission",
+       "created": 1794998863,
+       "allow_create_engine": false,
+       "allow_sampling": true,
+       "allow_logprobs": true,
+       "allow_search_indices": false,
+       "allow_view": true,
+       "allow_fine_tuning": false,
+       "organization": "*",
+       "group": null,
+       "is_blocking": false
+      }
+     ]
+    }
+   ]
+  },
+  "finished": "2026-11-18T04:48:22",
+  "wall_seconds": 39.305607318878174
+ },
+ "speed": {},
+ "ability": {
+  "tests": [
+   {
+    "id": "rsn-pipes",
+    "category": "reasoning",
+    "status": "pass",
+    "pass": true,
+    "expected": "36/7",
+    "got": "36/7",
+    "detail": null,
+    "ok": true,
+    "error": null,
+    "http_status": 200,
+    "ttft": 0.6175476409989642,
+    "t_first_content": 0.6175476409989642,
+    "total_time": 13.769967819993326,
+    "decode_time": 13.152321393994498,
+    "prompt_tokens": 112,
+    "completion_tokens": 382,
+    "reasoning_tokens": 0,
+    "answer_tokens": 382,
+    "token_source": "usage",
+    "split_source": "usage",
+    "tps": 28.9682702077193,
+    "prompt_tps": 181.3625258430675,
+    "content": "Let\u2019s go step by step.\n\n---\n\n**Step 1: Determine rates**\n\n- Pipe A fills the tank in 6 hours \u2192 rate = \\( \\frac{1}{6} \\) tank/hour  \n- Pipe B fills the tank in 9 hours \u2192 rate = \\( \\frac{1}{9} \\) tank/hour  \n- Drain C empties the tank in 12 hours \u2192 rate = \\( -\\frac{1}{12} \\) tank/hour  \n\n---\n\n**Step 2: Combined rate when all are open**\n\n\\[\n\\text{Net rate} = \\frac{1}{6} + \\frac{1}{9} - \\frac{1}{12}\n\\]\n\nFind a common denominator (36):\n\n\\[\n\\frac{1}{6} = \\frac{6}{36}, \\quad \\frac{1}{9} = \\frac{4}{36}, \\quad \\frac{1}{12} = \\frac{3}{36}\n\\]\n\n\\[\n\\text{Net rate} = \\frac{6}{36} + \\frac{4}{36} - \\frac{3}{36} = \\frac{7}{36} \\ \\text{tank/hour}\n\\]\n\n---\n\n**Step 3: Time to fill the tank**\n\nIf the net rate is \\( \\frac{7}{36} \\) tank/hour, then time \\( t \\) to fill 1 tank is:\n\n\\[\nt = \\frac{1}{\\frac{7}{36}} = \\frac{36}{7} \\ \\text{hours}\n\\]\n\n---\n\n**Step 4: Check if the tank can actually fill**\n\nSince net rate is positive (\\( \\frac{7}{36} > 0 \\)), the tank will fill.\n\n---\n\n**Final Answer:**\n\n\\[\n\\boxed{\\frac{36}{7}}\n\\]\n\n---\n\nANSWER: 36/7",
+    "reasoning": "",
+    "tool_calls": [],
+    "finish_reason": "stop",
+    "n_reasoning_deltas": 0,
+    "n_content_deltas": 94,
+    "n_tool_deltas": 0,
+    "usage": {
+     "prompt_tokens": 112,
+     "total_tokens": 494,
+     "completion_tokens": 382,
+     "completion_tokens_details": {
+      "reasoning_tokens": 0
+     }
+    },
+    "bad_chunks": 0
+   },
+   {
+    "id": "code-evaluate",
+    "category": "coding",
+    "status": "pass",
+    "pass": true,
+    "expected": "all hidden tests pass",
+    "got": "4/4 tests",
+    "detail": {
+     "passed": 4,
+     "total": 4,
+     "failures": [],
+     "import_error": null,
+     "sandbox_error": null,
+     "sandbox_time": 0.2844962639937876,
+     "code": "import re\nfrom typing import List, Union\n\ndef evaluate(expr: str) -> float:\n    Token = Union[str, float]\n    \n    # Tokenizer: numbers, operators, parentheses\n    token_re = re.compile(r'\\s*(\\d+(?:\\.\\d+)?|[-+*/()])')\n    tokens: List[Token] = []\n    pos = 0\n    n = len(expr)\n    while pos < n:\n        m = token_re.match(expr, pos)\n        if not m:\n            # leftover non-whitespace that didn't match\n            if expr[pos:].strip() == '':\n                break\n            raise ValueError(\"invalid character\")\n        tok = m.group(1)\n        if tok[0].isdigit() or (tok[0] == '.' and len(tok) > 1 and tok[1].isdigit()):\n            tokens.append(float(tok))\n        else:\n            tokens.append(tok)\n        pos = m.end()\n    \n    if not tokens:\n        raise ValueError(\"empty expression\")\n    \n    idx = 0\n    \n    def peek() -> Token:\n        return tokens[idx] if idx < len(tokens) else None\n    \n    def parse_primary() -> float:\n        nonlocal idx\n        tok = peek()\n        if tok is None:\n            raise ValueError(\"unexpected end\")\n        if tok == '-':\n            idx += 1\n            return -parse_primary()\n        if tok == '+':\n            idx += 1\n            return parse_primary()\n        if tok == '(':\n            idx += 1\n            val = parse_expr()\n            if peek() != ')':\n                raise ValueError(\"missing )\")\n            idx += 1\n            return val\n        if isinstance(tok, float):\n            idx += 1\n            return tok\n        raise ValueError(\"expected number or (\")\n    \n    def parse_term() -> float:\n        nonlocal idx\n        val = parse_primary()\n        while peek() in ('*', '/'):\n            op = peek()\n            idx += 1\n            rhs = parse_primary()\n            if op == '*':\n                val *= rhs\n            else:\n                if rhs == 0:\n                    raise ZeroDivisionError(\"division by zero\")\n                val /= rhs\n        return val\n    \n    def parse_expr() -> float:\n        nonlocal idx\n        val = parse_term()\n        while peek() in ('+', '-'):\n            op = peek()\n            idx += 1\n            rhs = parse_term()\n            if op == '+':\n                val += rhs\n            else:\n                val -= rhs\n        return val\n    \n    result = parse_expr()\n    if idx != len(tokens):\n        raise ValueError(\"extra tokens\")\n    return float(result)\n"
+    },
+    "ok": true,
+    "error": null,
+    "http_status": 200,
+    "ttft": 0.8817974810008309,
+    "t_first_content": 0.8817974810008309,
+    "total_time": 20.276718176995928,
+    "decode_time": 19.272739567997633,
+    "prompt_tokens": 237,
+    "completion_tokens": 603,
+    "reasoning_tokens": 0,
+    "answer_tokens": 603,
+    "token_source": "usage",
+    "split_source": "usage",
+    "tps": 31.235829129327335,
+    "prompt_tps": 268.76919599612313,
+    "content": "```python\nimport re\nfrom typing import List, Union\n\ndef evaluate(expr: str) -> float:\n    Token = Union[str, float]\n    \n    # Tokenizer: numbers, operators, parentheses\n    token_re = re.compile(r'\\s*(\\d+(?:\\.\\d+)?|[-+*/()])')\n    tokens: List[Token] = []\n    pos = 0\n    n = len(expr)\n    while pos < n:\n        m = token_re.match(expr, pos)\n        if not m:\n            # leftover non-whitespace that didn't match\n            if expr[pos:].strip() == '':\n                break\n            raise ValueError(\"invalid character\")\n        tok = m.group(1)\n        if tok[0].isdigit() or (tok[0] == '.' and len(tok) > 1 and tok[1].isdigit()):\n            tokens.append(float(tok))\n        else:\n            tokens.append(tok)\n        pos = m.end()\n    \n    if not tokens:\n        raise ValueError(\"empty expression\")\n    \n    idx = 0\n    \n    def peek() -> Token:\n        return tokens[idx] if idx < len(tokens) else None\n    \n    def parse_primary() -> float:\n        nonlocal idx\n        tok = peek()\n        if tok is None:\n            raise ValueError(\"unexpected end\")\n        if tok == '-':\n            idx += 1\n            return -parse_primary()\n        if tok == '+':\n            idx += 1\n            return parse_primary()\n        if tok == '(':\n            idx += 1\n            val = parse_expr()\n            if peek() != ')':\n                raise ValueError(\"missing )\")\n            idx += 1\n            return val\n        if isinstance(tok, float):\n            idx += 1\n            return tok\n        raise ValueError(\"expected number or (\")\n    \n    def parse_term() -> float:\n        nonlocal idx\n        val = parse_primary()\n        while peek() in ('*', '/'):\n            op = peek()\n            idx += 1\n            rhs = parse_primary()\n            if op == '*':\n                val *= rhs\n            else:\n                if rhs == 0:\n                    raise ZeroDivisionError(\"division by zero\")\n                val /= rhs\n        return val\n    \n    def parse_expr() -> float:\n        nonlocal idx\n        val = parse_term()\n        while peek() in ('+', '-'):\n            op = peek()\n            idx += 1\n            rhs = parse_term()\n            if op == '+':\n                val += rhs\n            else:\n                val -= rhs\n        return val\n    \n    result = parse_expr()\n    if idx != len(tokens):\n        raise ValueError(\"extra tokens\")\n    return float(result)\n```",
+    "reasoning": "",
+    "tool_calls": [],
+    "finish_reason": "stop",
+    "n_reasoning_deltas": 0,
+    "n_content_deltas": 137,
+    "n_tool_deltas": 0,
+    "usage": {
+     "prompt_tokens": 237,
+     "total_tokens": 840,
+     "completion_tokens": 603,
+     "completion_tokens_details": {
+      "reasoning_tokens": 0
+     }
+    },
+    "bad_chunks": 0
+   },
+   {
+    "id": "code-rate-limiter",
+    "category": "coding",
+    "status": "pass",
+    "pass": true,
+    "expected": "all hidden tests pass",
+    "got": "6/6 tests",
+    "detail": {
+     "passed": 6,
+     "total": 6,
+     "failures": [],
+     "import_error": null,
+     "sandbox_error": null,
+     "sandbox_time": 0.2833710980048636,
+     "code": "from collections import deque\n\nclass RateLimiter:\n    def __init__(self, max_calls: int, period: float):\n        self.max_calls = max_calls\n        self.period = period\n        self._allowed_times = deque()\n\n    def allow(self, t: float) -> bool:\n        cutoff = t - self.period\n        while self._allowed_times and self._allowed_times[0] <= cutoff:\n            self._allowed_times.popleft()\n\n        if len(self._allowed_times) < self.max_calls:\n            self._allowed_times.append(t)\n            return True\n        return False\n"
+    },
+    "ok": true,
+    "error": null,
+    "http_status": 200,
+    "ttft": 0.7213133640034357,
+    "t_first_content": 0.7213133640034357,
+    "total_time": 4.68790670800081,
+    "decode_time": 3.839861895998183,
+    "prompt_tokens": 202,
+    "completion_tokens": 135,
+    "reasoning_tokens": 0,
+    "answer_tokens": 135,
+    "token_source": "usage",
+    "split_source": "usage",
+    "tps": 34.89708839259343,
+    "prompt_tps": 280.04472131066444,
+    "content": "```python\nfrom collections import deque\n\nclass RateLimiter:\n    def __init__(self, max_calls: int, period: float):\n        self.max_calls = max_calls\n        self.period = period\n        self._allowed_times = deque()\n\n    def allow(self, t: float) -> bool:\n        cutoff = t - self.period\n        while self._allowed_times and self._allowed_times[0] <= cutoff:\n            self._allowed_times.popleft()\n\n        if len(self._allowed_times) < self.max_calls:\n            self._allowed_times.append(t)\n            return True\n        return False\n```",
+    "reasoning": "",
+    "tool_calls": [],
+    "finish_reason": "stop",
+    "n_reasoning_deltas": 0,
+    "n_content_deltas": 28,
+    "n_tool_deltas": 0,
+    "usage": {
+     "prompt_tokens": 202,
+     "total_tokens": 337,
+     "completion_tokens": 135,
+     "completion_tokens_details": {
+      "reasoning_tokens": 0
+     }
+    },
+    "bad_chunks": 0
+   }
+  ],
+  "summary": {
+   "reasoning": {
+    "pass": 1,
+    "fail": 0,
+    "error": 0,
+    "unsupported": 0,
+    "no_answer": 0,
+    "total": 1
+   },
+   "coding": {
+    "pass": 2,
+    "fail": 0,
+    "error": 0,
+    "unsupported": 0,
+    "no_answer": 0,
+    "total": 2
+   }
+  }
+ },
+ "html": []
+}

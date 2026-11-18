@@ -1,0 +1,93 @@
+A small tokenizer feeds a recursive-descent parser. The grammar is expr = term (('+'|'-') term)*, term = unary (('*'|'/') unary)*, unary = '-' unary | primary, primary = NUMBER | '(' expr ')'. Leftover tokens or missing tokens raise ValueError, and division by zero raises ZeroDivisionError. No eval, exec, compile or ast is used.
+
+```python
+def _tokenize(expr: str) -> list[tuple]:
+    tokens: list[tuple] = []
+    i, n = 0, len(expr)
+    while i < n:
+        c = expr[i]
+        if c.isspace():
+            i += 1
+        elif "0" <= c <= "9":
+            j = i
+            while j < n and "0" <= expr[j] <= "9":
+                j += 1
+            if j < n and expr[j] == ".":
+                k = j + 1
+                if k >= n or not ("0" <= expr[k] <= "9"):
+                    raise ValueError("malformed number")
+                j = k
+                while j < n and "0" <= expr[j] <= "9":
+                    j += 1
+            tokens.append(("num", float(expr[i:j])))
+            i = j
+        elif c in "+-*/()":
+            tokens.append((c, None))
+            i += 1
+        else:
+            raise ValueError(f"unexpected character {c!r}")
+    return tokens
+
+
+def evaluate(expr: str) -> float:
+    if not isinstance(expr, str):
+        raise ValueError("expression must be a string")
+    tokens = _tokenize(expr)
+    if not tokens:
+        raise ValueError("empty expression")
+    pos = 0
+
+    def peek():
+        return tokens[pos][0] if pos < len(tokens) else None
+
+    def advance():
+        nonlocal pos
+        tok = tokens[pos]
+        pos += 1
+        return tok
+
+    def parse_expr() -> float:
+        value = parse_term()
+        while peek() in ("+", "-"):
+            op = advance()[0]
+            rhs = parse_term()
+            value = value + rhs if op == "+" else value - rhs
+        return value
+
+    def parse_term() -> float:
+        value = parse_unary()
+        while peek() in ("*", "/"):
+            op = advance()[0]
+            rhs = parse_unary()
+            if op == "*":
+                value = value * rhs
+            else:
+                if rhs == 0:
+                    raise ZeroDivisionError("division by zero")
+                value = value / rhs
+        return value
+
+    def parse_unary() -> float:
+        if peek() == "-":
+            advance()
+            return -parse_unary()
+        return parse_primary()
+
+    def parse_primary() -> float:
+        t = peek()
+        if t == "num":
+            return advance()[1]
+        if t == "(":
+            advance()
+            value = parse_expr()
+            if peek() != ")":
+                raise ValueError("missing closing parenthesis")
+            advance()
+            return value
+        raise ValueError("expected a number or '('")
+
+    result = parse_expr()
+    if pos != len(tokens):
+        raise ValueError("unexpected trailing input")
+    return float(result)
+```

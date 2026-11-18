@@ -1,0 +1,3 @@
+Write a Python function `roman_to_int(s: str) -> int` that converts an uppercase Roman numeral in canonical form (values 1 to 3999, standard subtractive notation: IV, IX, XL, XC, CD, CM) to an integer. It must raise ValueError for any string that is not a valid canonical Roman numeral, for example '', 'IIII', 'IC', 'VX', 'MMMM' or 'ABC'.
+
+Give the complete implementation (with any imports it needs) in a single ```python code block at the end of your answer. Do not include example usage or tests in that block.

@@ -1,0 +1,10 @@
+There are 36 equally likely outcomes.
+
+Sum is 8: (2,6), (3,5), (4,4), (5,3), (6,2), so 5 outcomes.
+Same number: (1,1), (2,2), (3,3), (4,4), (5,5), (6,6), so 6 outcomes.
+Both: only (4,4) is in both sets, so 1 outcome.
+
+Either event: 5 + 6 - 1 = 10 outcomes.
+Probability: 10/36 = 5/18.
+
+ANSWER: 5/18

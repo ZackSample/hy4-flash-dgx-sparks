@@ -1,0 +1,10 @@
+Work rates per hour (fraction of tank):
+- Pipe A: 1/6
+- Pipe B: 1/9
+- Drain C: -1/12
+
+Combined rate: 1/6 + 1/9 - 1/12. With denominator 36: 6/36 + 4/36 - 3/36 = 7/36 of the tank per hour.
+
+Time to fill: 36/7 hours, which is about 5.14 hours.
+
+ANSWER: 36/7

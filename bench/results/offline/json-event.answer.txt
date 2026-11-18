@@ -1,0 +1,1 @@
+{"date": "2027-04-15", "start_time": "14:15", "attendees": 18, "rooms": ["Cedar", "Birch"], "catering": "vegetarian"}

@@ -1,0 +1,16 @@
+--- a/hy4_attention.py
++++ b/hy4_attention.py
+@@ -567,6 +567,13 @@
+             bias.
+ 
+         """
++        # hy4-flash-sparks patch: on the DGX Spark's GPU (sm_12x) the sink-capable kernel is FlashInfer's
++        # SM120 one (patches/sm120.py); FlashMLA does not exist there. Used by the DFly2 draft model.
++        _cap = current_platform.get_device_capability()
++        if _cap is not None and _cap.major == 12 and self.is_sparse:
++            from vllm.models.hy_v4_flash.nvidia.sm120 import FlashSparseSM120Backend
++
++            return FlashSparseSM120Backend
+         head_size = self.kv_lora_rank + self.qk_rope_head_dim
+         dtype = torch.get_default_dtype()
+         try:

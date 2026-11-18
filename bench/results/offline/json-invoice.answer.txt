@@ -1,0 +1,1 @@
+{"invoice_number": "INV-2027-0042", "issue_date": "2027-02-03", "currency": "EUR", "total": 96.49, "items": [{"sku": "SKU-A17", "qty": 3}, {"sku": "SKU-B02", "qty": 1}, {"sku": "SKU-C33", "qty": 10}]}

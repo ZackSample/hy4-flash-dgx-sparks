@@ -1,0 +1,14 @@
+Counting the r's in "The rural juror reported three rare errors during the trial.":
+
+- The: 0 (total 0)
+- rural: 2 (total 2)
+- juror: 2 (total 4)
+- reported: 2 (total 6)
+- three: 1 (total 7)
+- rare: 2 (total 9)
+- errors: 3 (total 12)
+- during: 1 (total 13)
+- the: 0 (total 13)
+- trial: 1 (total 14)
+
+ANSWER: 14

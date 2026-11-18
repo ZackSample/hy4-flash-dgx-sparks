@@ -1,0 +1,1 @@
+Write one sentence about the ocean that contains exactly 12 words and includes the word "ocean". Use only lowercase letters, no digits, and no punctuation at all except a single period at the very end. Reply with only that sentence.

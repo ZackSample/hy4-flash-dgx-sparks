@@ -1,0 +1,16 @@
+From 15 March 2023 to 15 March 2025 is two years. That span includes 29 February 2024, so it is 366 + 365 = 731 days.
+
+Remaining days: 1000 - 731 = 269, counted from 15 March 2025.
+Stepping month by month from 15 March 2025:
+- to 15 April: 31 days (238 left)
+- to 15 May: 30 days (208 left)
+- to 15 June: 31 days (177 left)
+- to 15 July: 30 days (147 left)
+- to 15 August: 31 days (116 left)
+- to 15 September: 31 days (85 left)
+- to 15 October: 30 days (55 left)
+- to 15 November: 31 days (24 left)
+
+15 November plus 24 days is 9 December 2025.
+
+ANSWER: 2025-12-09

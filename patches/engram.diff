@@ -1,0 +1,279 @@
+--- a/engram.py
++++ b/engram.py
+@@ -2,6 +2,8 @@
+ # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
+ """Flash frozen n-gram embeddings with TP head sharding and V2 lookback."""
+ 
++import os
++
+ import numpy as np
+ import torch
+ from torch import nn
+@@ -26,6 +28,78 @@
+ 
+ logger = init_logger(__name__)
+ 
++# --- hy4-flash-sparks patch: Engram tables read from the checkpoint files -------------
++# HY4_ENGRAM_DISK=1 keeps the four 31.7 GB tables out of memory. The loader hands this
++# module a file-backed (mmap) view of each table; we keep the view and gather each
++# step's rows on the host. Touched rows live in the page cache, which the kernel can
++# drop, so a 128 GB unified-memory box (DGX Spark) only pays for what it uses.
++ENGRAM_ON_DISK = os.environ.get("HY4_ENGRAM_DISK", "0") == "1"
++
++
++def _file_backing(tensor):
++    """(path, byte offset) of the file a loader-provided mmap view starts at."""
++    ptr = tensor.data_ptr()
++    with open("/proc/self/maps") as maps:
++        for line in maps:
++            parts = line.split(None, 5)
++            lo, hi = (int(x, 16) for x in parts[0].split("-"))
++            if lo <= ptr < hi and len(parts) == 6 and parts[5].strip().startswith("/"):
++                return parts[5].strip(), int(parts[2], 16) + (ptr - lo)
++    raise ValueError("Engram table is not a file-backed view")
++
++
++class _RowFile:
++    """Random reads of fixed-size rows: read-ahead off, every row's page requested first (the kernel
++    fetches them together), then copied out. A page fault per row through the mmap was ~10x slower."""
++
++    def __init__(self, path, base, row_bytes):
++        self.path, self.base, self.row_bytes = path, base, row_bytes
++        self.fd = os.open(path, os.O_RDONLY)
++        os.posix_fadvise(self.fd, 0, 0, os.POSIX_FADV_RANDOM)
++
++    def read(self, rows):
++        """rows: sorted int64 tensor of row numbers -> uint8 tensor [len(rows), row_bytes]."""
++        fd, rb = self.fd, self.row_bytes
++        offsets = (rows * rb + self.base).tolist()
++        buf = np.empty((len(offsets), rb), dtype=np.uint8)
++        for o in offsets:
++            os.posix_fadvise(fd, o, rb, os.POSIX_FADV_WILLNEED)
++        for i, o in enumerate(offsets):
++            if os.preadv(fd, [buf[i]], o) != rb:
++                raise ValueError(f"{self.path} is truncated at {o}")
++        return torch.from_numpy(buf)
++
++
++def _local_copy(view, name):
++    """With HY4_ENGRAM_LOCAL_DIR set (the worker, whose checkpoint is on NFS): keep this rank's rows in a
++    file on local disk, written once."""
++    folder = os.environ.get("HY4_ENGRAM_LOCAL_DIR")
++    if not folder:
++        return None
++    path = os.path.join(folder, f"{name}.bf16")
++    need = view.numel() * view.element_size()
++    if not (os.path.exists(path) and os.path.getsize(path) == need):
++        logger.info("Flash Engram on disk: copying %.1f GiB to %s (once)", need / 2**30, path)
++        step = 2_000_000
++        with open(path + ".part", "wb") as f:
++            for i in range(0, view.shape[0], step):
++                f.write(view[i : i + step].contiguous().view(torch.uint8).numpy().data)
++        os.replace(path + ".part", path)
++    return path
++
++
++def _disk_gather(table, vocab_start, indices, out):
++    """Write table[indices - vocab_start] into `out` (GPU). Masked ids (< 0) read row 0;
++    the caller zeroes them."""
++    from vllm.utils.gpu_sync_debug import gpu_sync_allowed
++
++    with gpu_sync_allowed():
++        idx = indices.reshape(-1).cpu()
++    local = (idx - vocab_start).clamp_(0, table.shape[0] - 1)
++    uniq, inverse = local.unique(return_inverse=True)  # sorted: file order
++    host = table.index_select(0, uniq).index_select(0, inverse)
++    out.copy_(host.view(out.shape))
++
+ 
+ class FlashEngramLayout:
+     def __init__(self, config):
+@@ -213,6 +287,13 @@
+         self.num_embeddings = sum(sizes)
+         self.n_hash_cols = len(sizes)
+         self.dim = dim
++        self.disk = ENGRAM_ON_DISK and dtype is None
++        self._disk_weight = None
++        self._disk_scale = None
++        self._rowfile = None
++        self._staged = None  # [max step tokens, local heads, dim] on the GPU, filled before each step
++        if self.disk:
++            cpu_offload = False
+         self.cpu_offload = cpu_offload
+         if cpu_offload and not is_uva_available():
+             raise RuntimeError("Flash Engram CPU offload requires UVA")
+@@ -258,6 +339,35 @@
+ 
+     def _load_shard(self, parameter, value):
+         is_weight = parameter is self.embedding.weight
++        if self.disk:
++            want = (self.num_embeddings, self.dim) if is_weight else (self.num_embeddings,)
++            if tuple(value.shape) != want or value.device.type != "cpu":
++                raise ValueError(
++                    f"Engram on disk needs the checkpoint's CPU view, got "
++                    f"{tuple(value.shape)}/{value.dtype}/{value.device}"
++                )
++            view = value[self.vocab_start : self.vocab_end]
++            if is_weight:
++                self._disk_weight = view
++                self.fp8 = value.dtype == torch.float8_e4m3fn
++                row_bytes = self.dim * view.element_size()
++                local = _local_copy(view, f"{getattr(self, '_disk_name', 'table')}_{self.vocab_start}_{self.vocab_end}")
++                if local:
++                    self._rowfile = _RowFile(local, 0, row_bytes)
++                else:
++                    self._rowfile = _RowFile(*_file_backing(view), row_bytes)
++                logger.info("Flash Engram on disk: rows read from %s", self._rowfile.path)
++            else:
++                self._disk_scale = view
++            logger.info(
++                "Flash Engram on disk: %s rows %d..%d (%s, %.1f GiB left in the file)",
++                "table" if is_weight else "scales",
++                self.vocab_start,
++                self.vocab_end,
++                value.dtype,
++                view.numel() * view.element_size() / 2**30,
++            )
++            return
+         expected = (
+             (self.num_embeddings, self.dim) if is_weight else (self.num_embeddings,)
+         )
+@@ -298,7 +408,26 @@
+         self._uva_weight = None
+         self._uva_scale = None
+ 
++    # A breakable CUDA graph stops at these, runs the host read, and starts a new segment. The table is reached
++    # through `self` because the capture can only hold GPU tensors (and plain objects) as arguments.
++    @eager_break_during_capture
++    def _disk_rows_with_output(self, indices, out):
++        _disk_gather(self._disk_weight, self.vocab_start, indices, out)
++
++    @eager_break_during_capture
++    def _disk_scale_with_output(self, indices, out):
++        _disk_gather(self._disk_scale, self.vocab_start, indices, out)
++
+     def _lookup(self, parameter, indices, out, *, scale=False):
++        if self.disk:
++            table = self._disk_scale if scale else self._disk_weight
++            if table is None:
++                raise RuntimeError("Engram table was not loaded from the checkpoint")
++            if scale:
++                self._disk_scale_with_output(indices, out)
++            else:
++                self._disk_rows_with_output(indices, out)
++            return
+         view_name = "_uva_scale" if scale else "_uva_weight"
+         view = getattr(self, view_name)
+         if view is None:
+@@ -323,10 +452,18 @@
+         indices = hashes[:, self.head_start : self.head_end].long().contiguous()
+         shape = (*indices.shape, self.dim)
+         rows = torch.empty(
+-            shape, dtype=self.embedding.weight.dtype, device=hashes.device
++            shape,
++            dtype=(
++                self._disk_weight.dtype if self.disk else self.embedding.weight.dtype
++            ),
++            device=hashes.device,
+         )
+         if indices.numel() == 0:
+             return rows.float()
++        if self.disk and self._staged is not None:
++            # Rows were read from disk before this step (HY4DiskEngramState.prepare_inputs). A fixed
++            # buffer keeps this graph-safe: a captured CUDA graph only sees a GPU slice.
++            return self._staged[: indices.shape[0]].float()
+         self._lookup(self.embedding.weight, indices, rows)
+         if self.fp8:
+             scales = torch.empty(
+@@ -360,6 +497,7 @@
+         self.multi_head_embedding = FlashEmbedding(
+             sizes, layout.head_dim, dtype, storage.cpu_offload
+         )
++        self.multi_head_embedding._disk_name = f"engram_layer{layer_id}"
+         self.hidden_size, self.hc_mult = config.hidden_size, config.hc_mult
+         local = (
+             self.multi_head_embedding.head_end - self.multi_head_embedding.head_start
+@@ -443,3 +581,83 @@
+             hidden.dtype
+         )
+         return hidden + result.masked_fill((hashes < 0).all(-1)[:, None, None], 0)
++
++
++# --- hy4-flash-sparks patch: read each step's Engram rows before the model runs ----------------------
++def stage_disk_rows(flash_model, input_ids, lookback, query_start_loc, seq_lens, num_actual_tokens):
++    """Hash this step's tokens exactly as the model will, read those rows from the checkpoint files
++    and leave them in each table's staging buffer."""
++    from types import SimpleNamespace
++
++    from vllm.utils.gpu_sync_debug import gpu_sync_allowed
++
++    state = flash_model.engram_hash
++    meta = SimpleNamespace(
++        query_start_loc=query_start_loc, seq_lens=seq_lens, num_actual_tokens=num_actual_tokens
++    )
++    hashes = state.prepare_hashes(input_ids, lookback, meta)  # [layers, tokens, heads]
++    with gpu_sync_allowed():
++        host = hashes.cpu()
++    for i, layer_id in enumerate(flash_model.config.engram_layer_ids):
++        emb = flash_model.layers[layer_id - 1].engram_layer.multi_head_embedding
++        if emb._staged is None or emb._disk_weight is None:
++            continue
++        idx = host[i][:, emb.head_start : emb.head_end].long().reshape(-1)
++        table = emb._disk_weight
++        local = (idx - emb.vocab_start).clamp_(0, table.shape[0] - 1)
++        uniq, inverse = local.unique(return_inverse=True)  # sorted: file order
++        rows = emb._rowfile.read(uniq).view(torch.bfloat16).index_select(0, inverse)
++        n = host.shape[1]
++        emb._staged[:n].copy_(rows.view(n, -1, emb.dim))
++
++
++def make_disk_engram_state_cls():
++    from vllm.models.deepseek_v41.nvidia.model_state import DeepseekV41ModelState
++
++    class HY4DiskEngramState(DeepseekV41ModelState):
++        """The stock Hy4 flash runner state, plus the disk read of Engram rows before every step."""
++
++        def __init__(self, vllm_config, model, encoder_cache, device):
++            super().__init__(vllm_config, model, encoder_cache, device)
++            self._flash = next(
++                (m for m in model.modules() if getattr(m, "engram_hash", None) is not None), None
++            )
++            rows = vllm_config.scheduler_config.max_num_batched_tokens
++            if self._flash is not None:
++                for layer_id in self._flash.config.engram_layer_ids:
++                    emb = self._flash.layers[layer_id - 1].engram_layer.multi_head_embedding
++                    if emb.disk:
++                        if emb.fp8:
++                            raise ValueError("Engram on disk supports BF16 tables only")
++                        emb._staged = torch.zeros(
++                            (rows, emb.head_end - emb.head_start, emb.dim),
++                            dtype=torch.bfloat16,
++                            device=device,
++                        )
++                logger.info("Flash Engram on disk: staging %d rows per step and table", rows)
++
++        def prepare_inputs(self, input_batch, req_states):
++            model_inputs = super().prepare_inputs(input_batch, req_states)
++            if self._flash is None or self.lookback_token_ids is None:
++                return model_inputs
++            ids = input_batch.input_ids[: input_batch.num_tokens_after_padding]
++            stage_disk_rows(
++                self._flash,
++                ids,
++                self.lookback_token_ids,
++                input_batch.query_start_loc,
++                input_batch.seq_lens,
++                input_batch.num_tokens,
++            )
++            return model_inputs
++
++    return HY4DiskEngramState
++
++
++if ENGRAM_ON_DISK:
++    # model.py imports this module while building the model, i.e. after its classes exist.
++    from . import model as _flash_model_module
++
++    _flash_model_module.HYV4FlashForCausalLM.get_model_state_cls = staticmethod(
++        make_disk_engram_state_cls
++    )

@@ -1,0 +1,11 @@
+Use inclusion-exclusion: sum(multiples of 3) + sum(multiples of 7) - sum(multiples of 21).
+
+Multiples of 3 up to 500: 3 x 1 through 3 x 166 (3 x 166 = 498). Sum = 3 x (166 x 167 / 2) = 3 x 13861 = 41583.
+
+Multiples of 7 up to 500: 7 x 1 through 7 x 71 (7 x 71 = 497). Sum = 7 x (71 x 72 / 2) = 7 x 2556 = 17892.
+
+Multiples of 21 up to 500: 21 x 1 through 21 x 23 (21 x 23 = 483, and 21 x 24 = 504 is too large). Sum = 21 x (23 x 24 / 2) = 21 x 276 = 5796.
+
+Total: 41583 + 17892 - 5796 = 53679.
+
+ANSWER: 53679

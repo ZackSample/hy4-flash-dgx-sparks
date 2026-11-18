@@ -1,0 +1,21 @@
+Keep a deque of timestamps of allowed calls only. Before deciding, drop timestamps that are less than or equal to t - period from the front (times are non-decreasing, so the front is always the oldest). The call is allowed if fewer than max_calls timestamps remain. Each call is amortised O(1), and instances keep separate state.
+
+```python
+from collections import deque
+
+
+class RateLimiter:
+    def __init__(self, max_calls: int, period: float):
+        self.max_calls = max_calls
+        self.period = period
+        self._allowed: deque = deque()
+
+    def allow(self, t: float) -> bool:
+        cutoff = t - self.period
+        while self._allowed and self._allowed[0] <= cutoff:
+            self._allowed.popleft()
+        if len(self._allowed) < self.max_calls:
+            self._allowed.append(t)
+            return True
+        return False
+```

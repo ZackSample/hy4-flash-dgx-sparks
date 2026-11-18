@@ -1,0 +1,9 @@
+Extract the information from the text below into a JSON object with exactly these keys:
+{"name": string (full name, without any title such as Dr.), "age": integer, "email": string, "city": string (current city only), "is_member": boolean}
+
+Text:
+"""
+Hey team, quick note from the front desk (sorry for the mess, typed this on my phone). The new sign-up yesterday was a woman named Dr. Priya Raman-Okafor; she said she's 41 (turning 42 in May, she was very keen to mention that). Her email, which she spelled out twice, is priya.ro@example.org, NOT the gmail one she first wrote on the form, that one bounced. She moved here from Leeds but now lives in Porto, Portugal. She did pay for the annual membership, so mark her as a member. Phone number wasn't given.
+"""
+
+Reply with only the JSON object and nothing else.

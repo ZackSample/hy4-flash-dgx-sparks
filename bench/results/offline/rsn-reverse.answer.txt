@@ -1,0 +1,3 @@
+Reversing "Benchmark2026-Flash" character by character, the pieces reverse as follows: "Flash" becomes "hsalF", "-" stays "-", "2026" becomes "6202", and "Benchmark" becomes "krahcneB".
+
+Result: hsalF-6202krahcneB

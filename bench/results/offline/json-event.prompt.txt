@@ -1,0 +1,9 @@
+Extract the information from the text below into a JSON object with exactly these keys:
+{"date": string "YYYY-MM-DD", "start_time": string "HH:MM" in 24-hour time, "attendees": integer (confirmed only), "rooms": array of strings (room names only, e.g. "Oak", for rooms that are still booked), "catering": string}
+
+Text:
+"""
+Minutes, sort of: the offsite planning session got moved again. It was supposed to be Tuesday at 9, then Kim pushed it, and it is now confirmed for Thursday 2027-04-15, starting at quarter past two in the afternoon. Headcount: 18 people said yes and 3 said maybe (don't count the maybes). We booked the Cedar room and the Birch room; the Maple room booking was cancelled. Catering will be vegetarian.
+"""
+
+Reply with only the JSON object and nothing else.

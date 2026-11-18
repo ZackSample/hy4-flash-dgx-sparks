@@ -1,0 +1,4 @@
+logs/
+local.sh
+patches/*.orig.py
+__pycache__/

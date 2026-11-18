@@ -1,0 +1,4 @@
+Write a Python function `evaluate(expr: str) -> float` that evaluates an arithmetic expression.
+Supported: non-negative numbers written as digits with an optional decimal part (e.g. 12, 3.5, 0.25), the binary operators + - * /, unary minus (e.g. -3, -(2+1), 2 * -3, 1 - -1), parentheses and arbitrary whitespace. Use normal precedence (* and / before + and -), all binary operators left-associative, / is true division. Return the value as a float. Raise ZeroDivisionError on division by zero and ValueError for malformed input (e.g. '', '1 +', '(1 + 2', '1 2', '2 * * 3', 'abc'). Do not use eval, exec, compile or the ast module.
+
+Give the complete implementation (with any imports it needs) in a single ```python code block at the end of your answer. Do not include example usage or tests in that block.

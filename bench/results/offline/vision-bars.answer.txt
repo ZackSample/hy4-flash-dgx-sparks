@@ -1,0 +1,3 @@
+Bar 3 reaches the highest point on the chart, above bars 2 and 4.
+
+ANSWER: 3
